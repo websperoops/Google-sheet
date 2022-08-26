@@ -33,7 +33,7 @@ async function createSheet(oAuth2Client, token) {
     oAuth2Client.setCredentials(JSON.parse(token));
     const resource = {
         properties: {
-            title: 'test 22',
+            title: 'TEST_LS',
         },
     };
     const sheets = google.sheets({ version: 'v4', auth: oAuth2Client });
@@ -42,7 +42,7 @@ async function createSheet(oAuth2Client, token) {
         fields: 'spreadsheetId',
     });
 
-    const spreadsheet1 = sheets.spreadsheets.values.append({
+    const spreadsheet1 = await sheets.spreadsheets.values.append({
         auth: oAuth2Client,
         spreadsheetId: `${spreadsheet.data.spreadsheetId}`,
         range: "Sheet1!A:B", //sheet name and range of cells
@@ -53,7 +53,21 @@ async function createSheet(oAuth2Client, token) {
             ]
         }
     });
-    console.log("1");
+
+    const spreadsheetId = spreadsheet1.data.spreadsheetId;
+
+    // PERMISSIONS
+    const drive = await google.drive({ version: "v3", auth: oAuth2Client });
+    const res = await drive.permissions.create({
+        resource: {
+            type: "user",
+            role: "commenter",//values are 'reader', 'commenter', 'writer', 'fileOrganizer', 'organizer', and 'owner'.
+            emailAddress: "johndoe@gmail.com"
+        },
+        fileId: spreadsheetId,
+        fields: "id",
+    });
+    // END PERMISSIONS
 }
 
 function getNewToken(oAuth2Client) {
